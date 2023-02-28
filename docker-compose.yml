@@ -1,0 +1,58 @@
+version: "3"
+services:
+  api_gateway:
+    build:
+      context: "."
+      dockerfile: "./api_gateway/Dockerfile"
+    depends_on:
+      - chat_service
+      - users_service
+    ports:
+      - "7000:7000"
+    volumes:
+      - ./api_gateway:/opt/app
+
+  chat_service:
+    build:
+      context: "."
+      dockerfile: "./chat_service/Dockerfile"
+    depends_on:
+      - chat_service_db
+    ports:
+      - "7100:7100"
+    volumes:
+      - ./chat_service:/opt/app
+
+  chat_service_db:
+    environment:
+      - MYSQL_ROOT_PASSWORD=password
+      - MYSQL_DATABASE=db
+    image: mysql:8.0.31
+    ports:
+      - "7200:3306"
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    ports:
+      - "7300:80"
+    volumes:
+      - ./phpmyadmin/config.user.inc.php:/etc/phpmyadmin/config.user.inc.php
+
+  users_service:
+    build:
+      context: "."
+      dockerfile: "./users_service/Dockerfile"
+    depends_on:
+      - users_service_db
+    ports:
+      - "7101:7101"
+    volumes:
+      - ./users_service:/opt/app
+
+  users_service_db:
+    environment:
+      - MYSQL_ROOT_PASSWORD=password
+      - MYSQL_DATABASE=db
+    image: mysql:8.0.31
+    ports:
+      - "7201:3306"
